@@ -1,103 +1,163 @@
-import Image from "next/image";
+'use client';
 
-export default function Home() {
+import { useEffect, useState } from 'react';
+import { gql, useQuery } from '@apollo/client';
+import {
+  Box,
+  Select,
+  Spinner,
+  Text,
+  VStack,
+  Heading,
+  Flex,
+  Card,
+  CardHeader,
+  CardBody,
+  useColorModeValue,
+} from '@chakra-ui/react';
+import {
+  LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer
+} from 'recharts';
+
+const COUNTRIES_QUERY = gql`
+  query Countries {
+    item(where: {class_id: {_eq: "Country"}}) {
+      id
+      name: name(path: "en")
+      iso2: statements(where: {property_id: {_eq: "iso2"}}) {
+        value: postgres_varchar
+      }
+    }
+  }
+`;
+
+const CUBE_QUERY = gql`
+  query CubeData($country: String!, $measure: String!) {
+    cube_cube_M6Lh5is0FtqUhZ(where: {country: {_eq: $country}, measure: {_eq: $measure}}) {
+      value
+      year
+    }
+  }
+`;
+
+const measures = [
+  { key: 'life_expectancy', label: 'Life Expectancy' },
+  { key: 'population', label: 'Population' },
+  { key: 'net_migration_rate', label: 'Net Migration Rate' },
+];
+
+export default function Page() {
+  const { data: countriesData, loading: countriesLoading, error: countriesError } = useQuery(COUNTRIES_QUERY);
+
+  const [selectedCountry, setSelectedCountry] = useState<string | null>(null);
+  const [selectedMeasure, setSelectedMeasure] = useState(measures[0].key);
+
+  // Color modes for cards and backgrounds
+  const cardBg = useColorModeValue('white', 'gray.700');
+  const selectBg = useColorModeValue('gray.100', 'gray.600');
+
+  useEffect(() => {
+    if (countriesData && countriesData.item.length > 0 && !selectedCountry) {
+      const firstCountry = countriesData.item[0].name.toLowerCase().split(' ')[0];
+      setSelectedCountry(firstCountry);
+    }
+  }, [countriesData, selectedCountry]);
+
+  const { data: cubeData, loading: cubeLoading, error: cubeError } = useQuery(CUBE_QUERY, {
+    variables: { country: selectedCountry || '', measure: selectedMeasure },
+    skip: !selectedCountry,
+  });
+
   return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm/6 text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-[family-name:var(--font-geist-mono)] font-semibold">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+    <Box p={{ base: 4, md: 10 }} maxW="7xl" mx="auto">
+      <Heading mb={6} textAlign="center" fontWeight="extrabold" fontSize={{ base: '3xl', md: '4xl' }}>
+        Datastory Dashboard
+      </Heading>
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+      <Flex direction={{ base: 'column', md: 'row' }} gap={6} justify="center" mb={10}>
+        <Card flex="1" bg={cardBg} boxShadow="md" borderRadius="lg" p={4}>
+          <CardHeader>
+            <Text fontWeight="semibold" fontSize="lg" mb={2}>
+              Select Country
+            </Text>
+          </CardHeader>
+          <Select
+            bg={selectBg}
+            value={selectedCountry || ''}
+            onChange={(e) => setSelectedCountry(e.target.value)}
+            borderRadius="md"
+            size="md"
+            _focus={{ borderColor: 'blue.400', boxShadow: '0 0 0 1px #3182ce' }}
           >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+            {countriesData?.item.map((c: any) => (
+              <option key={c.id} value={c.name.toLowerCase().split(' ')[0]}>
+                {c.name}
+              </option>
+            ))}
+          </Select>
+        </Card>
+
+        <Card flex="1" bg={cardBg} boxShadow="md" borderRadius="lg" p={4}>
+          <CardHeader>
+            <Text fontWeight="semibold" fontSize="lg" mb={2}>
+              Select Measure
+            </Text>
+          </CardHeader>
+          <Select
+            bg={selectBg}
+            value={selectedMeasure}
+            onChange={(e) => setSelectedMeasure(e.target.value)}
+            borderRadius="md"
+            size="md"
+            _focus={{ borderColor: 'blue.400', boxShadow: '0 0 0 1px #3182ce' }}
           >
-            Read our docs
-          </a>
-        </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
-    </div>
+            {measures.map((m) => (
+              <option key={m.key} value={m.key}>
+                {m.label}
+              </option>
+            ))}
+          </Select>
+        </Card>
+      </Flex>
+
+      <Card bg={cardBg} boxShadow="lg" borderRadius="xl" p={6} minH="420px">
+        {cubeLoading && (
+          <Flex justify="center" align="center" h="100%">
+            <Spinner size="xl" />
+          </Flex>
+        )}
+
+        {cubeError && (
+          <Text color="red.500" fontSize="lg" textAlign="center">
+            Error loading data
+          </Text>
+        )}
+
+        {cubeData && cubeData.cube_cube_M6Lh5is0FtqUhZ.length > 0 ? (
+          <ResponsiveContainer width="100%" height={400}>
+            <LineChart data={cubeData.cube_cube_M6Lh5is0FtqUhZ}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="year" tick={{ fontSize: 12 }} />
+              <YAxis tick={{ fontSize: 12 }} />
+              <Tooltip />
+              <Line
+                type="monotone"
+                dataKey="value"
+                stroke="#3182CE"
+                strokeWidth={3}
+                dot={{ r: 3 }}
+                activeDot={{ r: 5 }}
+              />
+            </LineChart>
+          </ResponsiveContainer>
+        ) : (
+          !cubeLoading && (
+            <Text fontSize="lg" textAlign="center" mt={10}>
+              No data available for this selection.
+            </Text>
+          )
+        )}
+      </Card>
+    </Box>
   );
 }
