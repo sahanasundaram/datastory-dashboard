@@ -1,36 +1,54 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+Dashboard Project - Progress and Next Steps
+What has been done so far
+Added Dependencies
 
-## Getting Started
+Integrated Apollo Client for managing GraphQL data fetching and caching.
 
-First, run the development server:
+Added Chakra UI for consistent, accessible, and themeable UI components.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+Included Recharts for building responsive and customizable charts.
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Dashboard Creation
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Developed the dashboard UI including filtering functionality to allow dynamic data display based on user-selected filters.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Testing Setup
 
-## Learn More
+Established a testing foundation for the codebase by setting up configuration files and base test files.
 
-To learn more about Next.js, take a look at the following resources:
+Created initial test files covering core components and functionality.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Component Tests
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Wrote unit test cases for the Layout component ensuring UI layout correctness.
 
-## Deploy on Vercel
+Created test cases for the Provider component to validate context and state management.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+Added test file for Resize Observer page behavior to check responsiveness and UI changes on window resize.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+What can be done next
+Expand Test Coverage
+
+Write test cases for other major components such as Dashboard filters, charts (Recharts), and Apollo Client data fetching integration.
+
+Add integration tests covering user flows like filter application, data loading, and error states.
+
+Improve Testing Setup
+
+Include mock GraphQL server or Apollo mocks to simulate backend responses in tests.
+
+Add coverage reports to identify untested parts of the codebase.
+
+Setup end-to-end tests using tools like Cypress or Playwright for UI and interaction validation.
+
+Enhance Dashboard Features
+
+Implement advanced filtering options and multi-filter combinations.
+
+Add more chart types and improve data visualization based on user feedback.
+
+Performance and Accessibility
+
+Test and optimize performance for large datasets and slow network conditions.
+
+Ensure accessibility compliance using Chakra UI best practices and accessibility testing tools.
